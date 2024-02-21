@@ -1,5 +1,7 @@
 -- Diagnostic config
 
+local icons = require('utils.icons')
+
 local codes = {
   -- Lua
   no_matching_function = {
@@ -113,7 +115,7 @@ vim.diagnostic.config({
   underline = true,
   update_in_insert = false,
   virtual_text = {
-    prefix = EcoVim.icons.circle,
+    prefix = icons.circle,
   },
 })
 

@@ -1,10 +1,4 @@
-local utils = require("utils")
-local bufferline_api = require("bufferline.api")
 local api = require("nvim-tree.api")
-local Event = api.events.Event
-
-local TREE_WIDTH = 35
-local current_size = nil
 
 local git_icons = {
 	unstaged = "",
@@ -18,17 +12,17 @@ local git_icons = {
 
 local function on_attach(bufnr)
   local function opts(desc)
-    return { desc = "nvim-tree: " .. desc, buffer = bufnr, noremap = true, silent = true, nowait = true }
+    return { desc = 'nvim-tree: ' .. desc, buffer = bufnr, noremap = true, silent = true, nowait = true }
   end
 
   vim.keymap.set('n', '<CR>', api.node.open.edit, opts('Open'))
   vim.keymap.set('n', 'o', api.node.open.edit, opts('Open'))
   vim.keymap.set('n', '<2-LeftMouse>', api.node.open.edit, opts('Open'))
-  vim.keymap.set('n', 'O', api.node.no_window_picker, opts('Open'))
+  vim.keymap.set('n', 'O', api.node.open.no_window_picker, opts('Open: No Window Picker'))
   vim.keymap.set('n', '<2-RightMouse>', api.tree.change_root_to_node, opts('CD'))
   vim.keymap.set('n', '<C-]>', api.tree.change_root_to_node, opts('CD'))
   vim.keymap.set('n', '<C-v>', api.node.open.vertical, opts('Open: Vertical Split'))
-  vim.keymap.set('n', '<C-h>', api.node.open.horizontal, opts('Open: Horizontal Split'))
+  vim.keymap.set('n', '<C-x>', api.node.open.horizontal, opts('Open: Horizontal Split'))
   vim.keymap.set('n', '<C-t>', api.node.open.tab, opts('Open: New Tab'))
   vim.keymap.set('n', '<', api.node.navigate.sibling.prev, opts('Previous Sibling'))
   vim.keymap.set('n', '>', api.node.navigate.sibling.next, opts('Next Sibling'))
@@ -51,13 +45,14 @@ local function on_attach(bufnr)
   vim.keymap.set('n', 'y', api.fs.copy.filename, opts('Copy Name'))
   vim.keymap.set('n', 'Y', api.fs.copy.relative_path, opts('Copy Relative Path'))
   vim.keymap.set('n', 'gy', api.fs.copy.absolute_path, opts('Copy Absolute Path'))
+  vim.keymap.set('n', '[c', api.node.navigate.git.prev, opts('Prev Git'))
+  vim.keymap.set('n', ']c', api.node.navigate.git.next, opts('Next Git'))
   vim.keymap.set('n', '-', api.tree.change_root_to_parent, opts('Up'))
   vim.keymap.set('n', 's', api.node.run.system, opts('Run System'))
   vim.keymap.set('n', 'q', api.tree.close, opts('Close'))
   vim.keymap.set('n', 'g?', api.tree.toggle_help, opts('Help'))
   vim.keymap.set('n', 'W', api.tree.collapse_all, opts('Collapse'))
   vim.keymap.set('n', 'S', api.tree.search_node, opts('Search'))
-
 end
 
 require("nvim-tree").setup({
@@ -141,15 +136,9 @@ require("nvim-tree").setup({
 	},
 	view = {
 		-- width of the window, can be either a number (columns) or a string in `%`
-		width = TREE_WIDTH,
-		hide_root_folder = false,
+		width = 40,
 		-- side of the tree, can be one of 'left' | 'right' | 'top' | 'bottom'
 		side = "left",
-		mappings = {
-			-- custom only false will merge the list with the default mappings
-			-- if true, it will only use your list to set the mappings
-			custom_only = true,
-		},
 		number = false,
 		relativenumber = false,
 	},
@@ -157,23 +146,7 @@ require("nvim-tree").setup({
 
 vim.api.nvim_set_keymap(
 	"n",
-	"<Leader>e",
+	"<C-e>",
 	"<cmd>lua require('nvim-tree.api').tree.toggle()<CR>",
 	{ noremap = true, silent = true }
 )
-
-api.events.subscribe(Event.TreeOpen, function()
-	bufferline_api.set_offset(
-		current_size or TREE_WIDTH + 1,
-		utils.add_whitespaces(((current_size or TREE_WIDTH + 1) - 13) / 2) .. "File Explorer"
-	)
-end)
-
-api.events.subscribe(Event.Resize, function(size)
-	bufferline_api.set_offset(size + 1, utils.add_whitespaces((size + 1 - 13) / 2) .. "File Explorer")
-	current_size = size + 1
-end)
-
-api.events.subscribe(Event.TreeClose, function(data)
-	bufferline_api.set_offset(0)
-end)
